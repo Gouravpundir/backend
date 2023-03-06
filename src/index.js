@@ -4,7 +4,7 @@ const app = express();
 const route = require("./routes/route");
 
 const cors = require('cors');
-app.use(cors({origin:https://altius-hospital.vercel.app}));
+app.use(cors({origin:"https://altius-hospital.vercel.app"}));
 
 
 
