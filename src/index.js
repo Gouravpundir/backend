@@ -1,29 +1,55 @@
 const express = require("express");
+const route = require("./routes/route.js");
+const displayRoute = require("./routes/display.js");
 const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+dotenv.config();
 const app = express();
-const route = require("./routes/route");
 
-const cors = require('cors');
-app.use(cors({origin:"https://altius-hospital.vercel.app"}));
-
-
+// Set up CORS headers
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "https://food-delivery-rho.vercel.app");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
 
 app.use(express.json());
 
+mongoose.set("strictQuery", true);
+
 mongoose
-  .connect(
-    "mongodb+srv://gourav-pundir:7HztUn9Bz3zFfxDT@cluster0.tnf1yk0.mongodb.net/gourav-22?retryWrites=true&w=majority",
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  )
-  .then(() => {
-    console.log("MongoDB is connected");
+  .connect("mongodb+srv://gourav-pundir:7HztUn9Bz3zFfxDT@cluster0.tnf1yk0.mongodb.net/gourav-22", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
   })
-  .catch((error) => {
-    console.log(error);
-  });
+  .then(() => {
+    console.log("MongoDb is connected");
+    const fetched_data = mongoose.connection.db.collection('foods');
+    fetched_data.find({}).toArray((err, data) => {
+      if (err) {
+        console.log(err);
+      } else {
+        global.foods = data;
+      }
+    });
+    const foodCategory = mongoose.connection.db.collection('category_name');
+    foodCategory.find({}).toArray((err, data) => {
+      if (err) {
+        console.log(err);
+      } else {
+        global.foodCategory = data;
+      }
+    });
+  })
+  .catch((err) => console.log(err));
 
 app.use("/", route);
+app.use("/api", displayRoute);
 
-app.listen(process.env.Port || 4000, function () {
-  console.log("Express app is running on port " + (process.env.Port || 4000));
+app.listen(process.env.PORT, function () {
+  console.log("Express app running on port " + process.env.PORT);
 });
